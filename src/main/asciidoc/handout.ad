@@ -210,5 +210,30 @@ public class SpeakerRepositoryTests {
 }
 ```
 
+=== Wrap up of the first example
+
+In order to use Spring Data JDBC in a Spring Boot application you need to do the following:
+
+* add `spring-boot-starter-data-jdbc` to your dependencies.
+
+* create entities.
+
+* create repositories.
+
+* inject the latter where needed.
+
+* persist away.
+
+== Spring Data JDBC vs Spring Data JPA
+
+== Aggregates in DDD and M:x Relationships Spring Data JDBC
+== Id Generation
+== Supported Data Types
+== Custom Conversions
+== Embeddable
+== @Query Annotation
+== Custom Methods
+== Integration in Spring Data Rest
+== Q&A
 
 include::self.ad[]
