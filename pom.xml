@@ -8,6 +8,7 @@
     <name>Material for a Spring Data JDBC Workshop by Jens Schauder</name>
     <description>Material for a Spring Data JDBC Workshop by Jens Schauder
     </description>
+	<packaging>pom</packaging>
 
     <properties>
         <project.slides.directory>${project.build.directory}/generated-slides</project.slides.directory>
@@ -22,6 +23,8 @@
         <maven-resources-plugin.version>3.1.0</maven-resources-plugin.version>
         <theme.dir>${project.slides.directory}/theme</theme.dir>
     </properties>
+
+	<modules><module>demo</module></modules>
 
     <build>
         <defaultGoal>process-resources</defaultGoal>

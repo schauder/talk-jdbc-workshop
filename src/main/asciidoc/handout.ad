@@ -1,0 +1,76 @@
+= Spring Data JDBC Workshop
+:icons: font
+:linkattrs:
+
+include::variables.ad[]
+
+include::footer.ad[]
+
+== What is Spring Data?
+
+Spring Data offers APIs for persisting data to various data stores.
+Some examples are MongoDB, Neo4J, Elastic Search, Relational Databases using JPA or JDBC and many more.
+
+The API is inspired by Domain Driven Design and comes in most cases with two levels:
+
+1. The Repository abstraction.
+A `Repository` looks somewhat like a collection of all instances of a given type with methods to add, find and delete instances.
+Repository can be extended in various ways many of which just require defining additional methods to a `Repository` without actually implementing them.
+The implementation will be provided by Spring Data.
+
+2. The Template abstraction.
+A template is a class that allows more direct access to special features of the underlying persistence technology.
+
+Spring Data does not try to unify the access to all these stores in order to make them interchangeable.
+Such an endeavor is bound to fail since each an every persistence store has features that are impossible or very expensive to emulate in another.
+A unifying API would either need to provide such an emulation or not offer any of these features at all.
+
+Instead Spring Data tries to provide a consistent API that makes it easy for users of one Spring Data variant to learn another while encouraging good application design at the same time.
+
+==  First Spring Data JDBC example
+
+=== Create a Spring Starter Project
+
+With Spring Tools and IntelliJ you can do this directly in the IDE.
+This only describes the web based variant.
+
+1. Goto https://start.spring.io
+
+2. Select
+    * latest Milestone version of Spring Boot ({spring.boot.version})
+    * add HyperSQL Database
+    * add Lombok
+    * add JDBC API
+    * generate the project
+    * unpack
+    * open in the IDE
+
+Some Notes on the dependencies:
+
+**Lombok** isn't really needed but it makes the code nice and concise.
+If you don't like Lombok you can create constructors, `equals` and `hashcode` implementations with your IDE just as well.
+
+**JDBC API** is actually not what we need. But it's close and we'll change it in a moment.
+
+=== Add Spring Data JDBC
+
+Open the `pom.xml`.
+Find the following section:
+
+```
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+```
+
+And replace it with this one.
+
+```
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jdbc</artifactId>
+		</dependency>
+```
+
+include::self.ad[]
