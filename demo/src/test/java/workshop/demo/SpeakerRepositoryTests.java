@@ -65,4 +65,24 @@ public class SpeakerRepositoryTests {
 
 	}
 
+	@Test
+	public void speakerWithWebsite() {
+
+		Speaker martin = new Speaker();
+		martin.name = "Martin Fowler";
+		martin.websites.put("main", new Website("https://martinfowler.com/", "Martin Fowler"));
+		martin.websites.put("wikipedia", new Website("https://en.wikipedia.org/wiki/Martin_Fowler", "Martin Fowler - Wikipedia"));
+
+		Speaker saved = speakers.save(martin);
+		assertThat(saved.id).isNotNull();
+
+		Speaker reloaded = speakers.findById(saved.id).get();
+
+		reloaded.websites.get("wikipedia").title = "Martin Fowler on Wikipedia";
+
+		speakers.save(reloaded);
+
+		speakers.delete(reloaded);
+	}
+
 }

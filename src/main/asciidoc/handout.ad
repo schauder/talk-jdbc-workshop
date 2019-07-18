@@ -300,15 +300,78 @@ assertThat(loaded.get())
 		.isNotSameAs(reloaded.get());
 ```
 
+While this  makes things simpler it brings some extra challenges.
+We'll see those later and how to tackle them.
+
 == Storing Relationships
 
 Let's make `Speakers` more interesting.
 Each speaker should have a `Map` of `Website` references.
 Like so:
 
+```
+@EqualsAndHashCode
+@ToString
+@AllArgsConstructor
+public class Website {
 
+	String link;
+	String title;
+}
+```
+
+Add the following line to the `Speaker` class.
+
+```
+Map<String, Website> websites = new HashMap<>();
+```
+
+Of course we need adapt our schema as well.
+Add the following to the `schema.sql` file.
+
+```
+CREATE TABLE WEBSITE
+(
+  SPEAKER     BIGINT,
+  SPEAKER_KEY VARCHAR(20),
+  LINK        VARCHAR(200),
+  TITLE       VARCHAR(200),
+  PRIMARY KEY (SPEAKER, SPEAKER_KEY)
+);
+```
+
+Note that the table has two extra columns.
+One for a backreference to `SPEAKER` and one for the map key.
+
+Create a test to play around with `Speaker` and `Website`.
+
+For example.
+
+```
+Speaker martin = new Speaker();
+martin.name = "Martin Fowler";
+martin.websites.put("main", new Website("https://martinfowler.com/", "Martin Fowler"));
+martin.websites.put("wikipedia", new Website("https://en.wikipedia.org/wiki/Martin_Fowler", "Martin Fowler - Wikipedia"));
+
+Speaker saved = speakers.save(martin);
+assertThat(saved.id).isNotNull();
+
+Speaker reloaded = speakers.findById(saved.id).get();
+
+reloaded.websites.get("wikipedia").title = "Martin Fowler on Wikipedia";
+
+speakers.save(reloaded);
+
+speakers.delete(reloaded);
+
+```
+
+Take a look at the SQL used.
+Do you have questions?
 
 == Aggregates in DDD and M:x Relationships Spring Data JDBC
+
+
 == Id Generation
 == Supported Data Types
 == Custom Conversions

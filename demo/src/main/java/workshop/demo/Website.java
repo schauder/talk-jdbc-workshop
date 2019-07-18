@@ -15,19 +15,18 @@
  */
 package workshop.demo;
 
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.springframework.data.annotation.Id;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@ToString
+/**
+ * @author Jens Schauder
+ */
 @EqualsAndHashCode
-public class Speaker {
-	@Id
-	Long id;
-	String name;
+@ToString
+@AllArgsConstructor
+public class Website {
 
-	Map<String, Website> websites = new HashMap<>();
+	String link;
+	String title;
 }
