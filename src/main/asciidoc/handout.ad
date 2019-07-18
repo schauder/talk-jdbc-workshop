@@ -208,6 +208,9 @@ public class SpeakerRepositoryTests {
 }
 ```
 
+Make sure to remove the save operation in the `CommandLineRunner`.
+Otherwise it will run before each test and mess with your test data.
+
 === Wrap up of the first example
 
 In order to use Spring Data JDBC in a Spring Boot application you need to do the following:
@@ -223,6 +226,87 @@ In order to use Spring Data JDBC in a Spring Boot application you need to do the
 * persist away.
 
 == Spring Data JDBC vs Spring Data JPA
+
+Why are there two Spring Data modules for the same underlying technology: Relational databases?
+
+JPA is pretty much the default technology when accessing RDBMSes on the JVM.
+This does not mean it is without problems.
+
+* It considers the complete domain object graph a single graph.
+So you might load a few instances with a query and then navigate the whole database using objects.
+While this is possible it is very inefficient.
+Either you rely on lazy loading which means the required data is loaded piece by piece.
+Also a simple call of an getter might trigger an arbitrary amount of SQL statements.
+Or you rely on eager loading which leads to large amounts of data loaded even if not needed.
+
+* Similar to lazy loading JPA uses write behind to dynamically determine when to write back to the database.
+This can lead to confusing scenarios where the user thinks data is stored in the database but it actually isn't.
+
+* JPA employs an first level cache that guarantees that for a given class and id only a single instance will get loaded into a persistence context.
+In 99% of the cases this is rather nice.
+But in 1% of the cases this is really confusing.
+For example you can't easily load the current state of an object from the database if you already loaded it before.
+
+* Finally JPA maintains a relationship between domain objects and the persistence context.
+This is to enable dirty checking.
+Again, often this is very useful.
+But  it also can get very confusing when you actually don't want to persist changes to an entity.
+Or if you want to copy an entity.
+
+This makes JPA hard to understand and hard to use correctly.
+
+Spring Data JDBC tries to be a conceptually simpler alternative.
+We achieve that by not doing many things.
+
+1. No Lazy Loading.
+2. No write behind cache.
+3. No cache at all. Of course you are free to add a cache on top of it.
+4. No proxies.
+
+Spring Data will save you data when you call `save` and only return once it is inserted or updated in the database.
+It will not save data you haven't invoked `save` for.
+All data will be fully loaded within the method call that loads the data.
+
+Try the following examples.
+Also inspect the logs to see what kind of interaction is happening with the database.
+
+```
+Speaker martin = new Speaker();
+martin.name = "Martin Fowler";
+Speaker saved = speakers.save(martin);
+assertThat(saved.id).isNotNull();
+
+
+saved.id = null;
+
+Speaker savedAgain = speakers.save(martin);
+
+assertThat(savedAgain.id).isNotNull();
+
+assertThat(speakers.findAll()).hasSize(2);
+```
+
+```
+Speaker martin = new Speaker();
+martin.name = "Martin Fowler";
+Speaker saved = speakers.save(martin);
+assertThat(saved.id).isNotNull();
+
+Optional<Speaker> loaded = speakers.findById(saved.id);
+Optional<Speaker> reloaded = speakers.findById(saved.id);
+
+assertThat(loaded.get())
+		.isEqualTo(reloaded.get())
+		.isNotSameAs(reloaded.get());
+```
+
+== Storing Relationships
+
+Let's make `Speakers` more interesting.
+Each speaker should have a `Map` of `Website` references.
+Like so:
+
+
 
 == Aggregates in DDD and M:x Relationships Spring Data JDBC
 == Id Generation
