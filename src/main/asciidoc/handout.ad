@@ -4,8 +4,6 @@
 
 include::variables.ad[]
 
-include::footer.ad[]
-
 == What is Spring Data?
 
 Spring Data offers APIs for persisting data to various data stores.
