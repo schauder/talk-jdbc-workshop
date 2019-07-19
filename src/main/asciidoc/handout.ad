@@ -89,7 +89,7 @@ import org.springframework.data.annotation.Id;
 
 @ToString
 @EqualsAndHashCode
-public class Speaker {
+class Speaker {
 	@Id
 	Long id;
 	String name;
@@ -101,7 +101,7 @@ Create a repository
 ```
 import org.springframework.data.repository.CrudRepository;
 
-public interface SpeakerRepository extends CrudRepository<Speaker, Long> { }
+interface SpeakerRepository extends CrudRepository<Speaker, Long> { }
 
 ```
 
@@ -313,7 +313,7 @@ Like so:
 @EqualsAndHashCode
 @ToString
 @AllArgsConstructor
-public class Website {
+class Website {
 
 	String link;
 	String title;
@@ -371,6 +371,246 @@ Do you have questions?
 
 == Aggregates in DDD and M:x Relationships Spring Data JDBC
 
+In the last example you could observe that deleting a `Speaker` deleted  all the `Website` instances.
+Currently even an update does that.
+In the update case there are improvements planned so that only those actually removed from a collection get deleted.
+But those that get removed from the collection still will get deleted and so are those referenced by a `Speaker` that gets deleted.
+
+If we are only interested in a `Website` in the context of a `Speaker` this is ok.
+It is basically the `CascadeType.ALL` pluse `orphanRemoval = true` or in older versions `CascadeType.DELETE_ORPHAN`
+But what if we don't want this behavior?
+
+For an example let's add a domain class `Talk` which has a list of `Speaker` instances.
+We don't want to delete a `Speaker` when a `Talk` is deleted or even just updated.
+That `Speaker` might be doing other talks after all.
+
+At this point it is instructive to take a step back and take a look at what we are doing conceptually.
+A `Repository` is a concept from Domain Driven Design.
+It loads and saves "aggregates".
+"What is an aggregate?" you ask.
+
+Let's hear Martin Fowler.
+
+> A DDD aggregate is a cluster of domain objects that can be treated as a single unit.
+ [...]
+ Aggregates are the basic element of transfer of data storage - you request to load or save whole aggregates.
+
+Closely related to aggregates is the "aggregate root"
+
+> An aggregate will have one of its component objects be the aggregate root.
+  Any references from outside the aggregate should only go to the aggregate root.
+  The root can thus ensure the integrity of the aggregate as a whole.
+
+Spring Data JDBC saves, loads and deletes aggregates.
+This fits the approach of deleting everything.
+It also suggests that if we don't want to delete a `Speaker` when we delete a `Talk` that `Speaker` and `Talk` are different aggregates.
+This is actually true for all to many-to-many or many-to-one relationships.
+Because in all these cases the life cycle of the two sides of the relationship are independent of each other.
+
+But all this still doesn't answer the question how to actually model these references between aggregates.
+
+So lets ask David Masters
+
+> It makes life much easier if you just keep a reference of the aggregate’s ID rather than the actual aggregate itself.
+
+Or Vaughn Vernon _Domain-Driven Design Distilled (Kindle Locations 1087-1088). Pearson Education. Kindle Edition._
+
+> Reference other Aggregates by identity only.
+
+With this approach our original problem just disappears.
+Since in the domain model there is just an id, Spring Data JDBC doesn't even have the necessary knowledge to delete the referenced entity or aggregate.
+
+So lets do that for the `Talk` class.
+
+```
+@ToString
+@EqualsAndHashCode
+class Talk {
+
+	@Id
+	Long id;
+	String title;
+	List<Long> speakerIds = new ArrayList<>();
+
+	Talk(String title) {
+		this.title = title;
+	}
+
+	void addSpeakers(Speaker... speakers) {
+
+		for (Speaker speaker : speakers) {
+			addSpeaker(speaker);
+		}
+	}
+
+	private void addSpeaker(Speaker speaker) {
+
+		assert speaker != null;
+		assert speaker.id != null;
+
+		speakerIds.add(speaker.id);
+	}
+}
+```
+
+```
+interface TalkRepository extends CrudRepository<Talk, Long> { }
+```
+
+```
+@RunWith(SpringRunner.class)
+@DataJdbcTest
+public class AggregateReferenceTests {
+
+	@Autowired
+	SpeakerRepository speakers;
+
+	@Autowired
+	TalkRepository talks;
+
+	@Test
+	public void speakerAndTalks() {
+
+		Speaker steven = speaker("Steven Schwenke");
+		Speaker tim = speaker("Tim Bourguignon");
+
+		speakers.saveAll(asList(steven, tim));
+
+		Talk teams = new Talk("Managing Distributed Teams");
+		teams.addSpeakers(steven);
+
+		Talk mentoring = new Talk("Mentoring Speed Dating");
+		mentoring.addSpeakers(steven, tim);
+
+		Talk unicorns = new Talk("Why Unicorn Developers don't Grow on Trees?");
+		unicorns.addSpeakers(tim);
+
+		talks.saveAll(asList(teams, mentoring, unicorns));
+
+		assertThat(speakers.count()).isEqualTo(2);
+		assertThat(talks.count()).isEqualTo(3);
+
+		talks.delete(teams);
+
+		assertThat(speakers.count()).isEqualTo(2);
+		assertThat(talks.count()).isEqualTo(2);
+
+		assertThat(talks.findById(mentoring.id).get().speakerIds).containsExactlyInAnyOrder(tim.id, steven.id);
+	}
+
+	private Speaker speaker(String name) {
+
+		Speaker speaker = new Speaker();
+		speaker.name = name;
+		return speaker;
+	}
+}
+```
+
+```
+CREATE TABLE TALK
+(
+  ID   BIGINT GENERATED BY DEFAULT AS IDENTITY (START WITH 1) PRIMARY KEY,
+  TITLE VARCHAR(200),
+  SPEAKER_IDS BIGINT ARRAY
+);
+```
+
+This approach uses a `BIGINT ARRAY` to store the references in the database.
+This has the benefit of getting loaded and saved in a single statement.
+But it also comes with drawbacks, like not all databases supporting it and those that do might not support foreign keys.
+
+You can achieve the same with a traditional mapping table.
+For demoing that let's introduce conferences which have a M:N relationship to talks:
+
+```
+@ToString
+@EqualsAndHashCode
+class Conference {
+
+	@Id
+	Long id;
+	String name;
+	LocalDate startDate;
+
+	Set<TalkReference> talks = new HashSet<>();
+
+	Conference(String name, LocalDate startDate) {
+		this.name = name;
+		this.startDate = startDate;
+	}
+
+	void addTalks(Talk... talks) {
+
+		for (Talk talk : talks) {
+			this.addTalk(talk);
+		}
+	}
+
+	private void addTalk(Talk talk) {
+
+		assert talk != null;
+		assert talk.id != null;
+
+		talks.add(new TalkReference(talk.id));
+	}
+}
+```
+
+```
+@Value
+@Table("CONFERENCE_TALK")
+public class TalkReference {
+    @Column("TALK")
+	Long talkId;
+}
+```
+
+```
+interface ConferenceRepository extends CrudRepository<Conference, Long> { }
+```
+
+```
+CREATE TABLE CONFERENCE
+(
+  ID   BIGINT GENERATED BY DEFAULT AS IDENTITY (START WITH 1),
+  NAME VARCHAR(200),
+  START_DATE DATE,
+  CONSTRAINT PK_CONFERENCE PRIMARY KEY (ID)
+);
+
+CREATE TABLE CONFERENCE_TALK
+(
+  CONFERENCE BIGINT,
+  TALK       BIGINT,
+  PRIMARY KEY (CONFERENCE, TALK)
+);
+
+ALTER TABLE CONFERENCE_TALK
+  ADD CONSTRAINT FK_CONFERENCE_TALK_CONFERENCE FOREIGN KEY (CONFERENCE) REFERENCES CONFERENCE (ID);
+ALTER TABLE CONFERENCE_TALK
+  ADD CONSTRAINT FK_CONFERENCE_TALK_TALK FOREIGN KEY (TALK) REFERENCES TALK (ID);
+```
+
+```
+@Test
+public void talksAndConferences() {
+
+	Talk teams = new Talk("Managing Distributed Teams");
+	Talk mentoring = new Talk("Mentoring Speed Dating");
+	Talk unicorns = new Talk("Why Unicorn Developers don't Grow on Trees?");
+
+	talks.saveAll(asList(teams, mentoring, unicorns));
+
+	Conference javaLand = new Conference("JavaLand", LocalDate.parse("2020-03-17", DateTimeFormatter.ISO_DATE));
+	javaLand.addTalks(teams, mentoring, unicorns);
+
+	Conference javaForum = new Conference("Java Forum Nord", LocalDate.parse("2019-09-24", DateTimeFormatter.ISO_DATE));
+	javaForum.addTalks(teams, mentoring);
+
+	conferences.saveAll(asList(javaLand, javaForum));
+}
+```
 
 == Id Generation
 == Supported Data Types

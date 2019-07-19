@@ -15,18 +15,48 @@
  */
 package workshop.demo;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.MappedCollection;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author Jens Schauder
  */
-@EqualsAndHashCode
 @ToString
-@AllArgsConstructor
-class Website {
+@EqualsAndHashCode
+class Conference {
 
-	String link;
-	String title;
+	@Id
+	Long id;
+	String name;
+	LocalDate startDate;
+
+	Set<TalkReference> talks = new HashSet<>();
+
+	Conference(String name, LocalDate startDate) {
+		this.name = name;
+		this.startDate = startDate;
+	}
+
+	void addTalks(Talk... talks) {
+
+		for (Talk talk : talks) {
+			this.addTalk(talk);
+		}
+	}
+
+	private void addTalk(Talk talk) {
+
+		assert talk != null;
+		assert talk.id != null;
+
+		talks.add(new TalkReference(talk.id));
+	}
 }

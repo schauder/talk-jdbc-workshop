@@ -15,18 +15,16 @@
  */
 package workshop.demo;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.Value;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
 /**
  * @author Jens Schauder
  */
-@EqualsAndHashCode
-@ToString
-@AllArgsConstructor
-class Website {
-
-	String link;
-	String title;
+@Value
+@Table("CONFERENCE_TALK")
+public class TalkReference {
+	@Column("TALK")
+	Long talkId;
 }

@@ -13,6 +13,7 @@ import static org.assertj.core.api.Assertions.*;
 
 @RunWith(SpringRunner.class)
 @DataJdbcTest
+@Transactional
 public class SpeakerRepositoryTests {
 
 	@Autowired
@@ -32,6 +33,8 @@ public class SpeakerRepositoryTests {
 
 	@Test
 	public void copyInstance() {
+
+		assertThat(speakers.findAll()).hasSize(0);
 
 		Speaker martin = new Speaker();
 		martin.name = "Martin Fowler";

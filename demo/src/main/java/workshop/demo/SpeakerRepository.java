@@ -17,4 +17,5 @@ package workshop.demo;
 
 import org.springframework.data.repository.CrudRepository;
 
-public interface SpeakerRepository extends CrudRepository<Speaker, Long> { }
+interface SpeakerRepository extends CrudRepository<Speaker, Long> {
+}

@@ -15,18 +15,41 @@
  */
 package workshop.demo;
 
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Jens Schauder
  */
-@EqualsAndHashCode
 @ToString
-@AllArgsConstructor
-class Website {
+@EqualsAndHashCode
+class Talk {
 
-	String link;
+	@Id
+	Long id;
 	String title;
+	List<Long> speakerIds = new ArrayList<>();
+
+	Talk(String title) {
+		this.title = title;
+	}
+
+	void addSpeakers(Speaker... speakers) {
+
+		for (Speaker speaker : speakers) {
+			addSpeaker(speaker);
+		}
+	}
+
+	private void addSpeaker(Speaker speaker) {
+
+		assert speaker != null;
+		assert speaker.id != null;
+
+		speakerIds.add(speaker.id);
+	}
 }

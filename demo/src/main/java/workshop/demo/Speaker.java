@@ -24,7 +24,7 @@ import java.util.Map;
 
 @ToString
 @EqualsAndHashCode
-public class Speaker {
+class Speaker {
 	@Id
 	Long id;
 	String name;

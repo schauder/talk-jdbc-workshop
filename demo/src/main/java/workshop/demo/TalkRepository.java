@@ -15,18 +15,6 @@
  */
 package workshop.demo;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import org.springframework.data.repository.CrudRepository;
 
-/**
- * @author Jens Schauder
- */
-@EqualsAndHashCode
-@ToString
-@AllArgsConstructor
-class Website {
-
-	String link;
-	String title;
-}
+interface TalkRepository extends CrudRepository<Talk, Long> { }
