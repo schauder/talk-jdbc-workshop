@@ -612,7 +612,28 @@ public void talksAndConferences() {
 }
 ```
 
-== Id Generation
+=== But Why?
+
+Handling ids manually is cumbesome.
+Why would one want to do that?
+
+Because it breaks the domain in modules.
+And this has all kinds of positiv effects.
+
+* It is now really easy to understand what get loaded and saved in one go.
+* The persistence question may now be answered for every aggregate separately.
+Since you are loading it from an repository anyway you might as well store it in a different database.
+* You might rethink foreign keys between aggregates.
+    ** Using deferred constraints may help with integration tests, because you no longer need to create all referenced entities.
+    ** Dropping foreign keys completely between aggregates is a sensible way to eventual consistency.
+* Eventually the boundaries between aggregates might turn into boundaries between microservices.
+
+=== Congratulations
+
+Understanding aggregates is the most important part of this workshop.
+Note that you may use this approach independent of Spring Data JDBC.
+
+== Events and Id Generation
 == Supported Data Types
 == Custom Conversions
 == Embeddable
