@@ -16,12 +16,11 @@ public class UuidRepositoryTests {
 	@Autowired
 	UuidEntityRepository entities;
 
-
 	@Test
 	public void generateIdInCallback() {
 
-			UuidEntity entity = new UuidEntity();
+		UuidEntity entity = new UuidEntity();
 
-			entities.save(entity);
+		entities.save(entity);
 	}
 }

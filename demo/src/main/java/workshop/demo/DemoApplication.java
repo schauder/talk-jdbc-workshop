@@ -4,9 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.relational.core.mapping.event.AfterSaveCallback;
 import org.springframework.data.relational.core.mapping.event.BeforeConvertCallback;
-import org.springframework.data.relational.core.mapping.event.BeforeSaveEvent;
-import org.springframework.data.relational.core.mapping.event.Identifier;
 
 import java.util.UUID;
 
@@ -23,8 +22,16 @@ public class DemoApplication {
 
 	@Bean
 	BeforeConvertCallback<UuidEntity> uuidGenerator() {
-		return (aggregate, id) -> {
+		return aggregate -> {
 			aggregate.id = UUID.randomUUID();
+			return aggregate;
+		};
+	}
+
+	@Bean
+	AfterSaveCallback<UuidEntityPresetId> markAsSaved() {
+		return aggregate -> {
+			aggregate.isNew = false;
 			return aggregate;
 		};
 	}

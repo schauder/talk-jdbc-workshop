@@ -642,7 +642,7 @@ I princple there are two different scenarios:
 
 1. You still want to create the id when the data gets stored in the database.
 
-2. New entities already have an id that should be use.
+2. New entities already have an id that should be used.
 
 For the first part let's use UUIDs for the primary key.
 
@@ -675,7 +675,7 @@ We do that in a callback.
 BeforeConvertCallback<UuidEntity> uuidGenerator() {
 	return new BeforeConvertCallback<UuidEntity>() {
 		@Override
-		public UuidEntity onBeforeConvert(UuidEntity aggregate, Identifier id) {
+		public UuidEntity onBeforeConvert(UuidEntity aggregate) {
 			aggregate.id = UUID.randomUUID();
 			return aggregate;
 		}
@@ -685,17 +685,82 @@ BeforeConvertCallback<UuidEntity> uuidGenerator() {
 
 Or written as a closure
 
-
+```
 @Bean
 BeforeConvertCallback<UuidEntity> uuidGenerator() {
-	return (aggregate, id) -> {
+	return aggregate -> {
 		aggregate.id = UUID.randomUUID();
 		return aggregate;
 	};
 }
+```
+
+This is what is happening under the hood:
+Spring Data notices that the id is `null` and therefore determines that it is  a new entity.
+The callback then sets the id and Spring Data continues to convert it and to store it with the generated id in the database.
+
+This makes it obvious why we need a different strategy for the case where the id is set a priori.
+If the id is already set Spring Data considers it an existing entity by default and performs and update instead
+
+Lets create another example how to handle this.
+There are two fundamentel different ways to achieve this.
+The first approach is to code the information if an entity is new or not into the entity by letting it implement `Persistable`.
+
+```
+@Table("UUID_ENTITY")
+class UuidEntityPresetId implements Persistable {
+
+	@Id
+	UUID id;
+
+	String name;
+
+	@Transient
+	boolean isNew;
+
+	@PersistenceConstructor
+	UuidEntityPresetId(UUID id, String name) {
+		this.id = id;
+		this.name = name;
+		this.isNew = false;
+	}
+
+	UuidEntityPresetId(String name) {
+		id = UUID.randomUUID();
+		this.name = name;
+		this.isNew = true;
+	}
+
+	@Override
+	public Object getId() {
+		return id;
+	}
+
+	@Override
+	public boolean isNew() {
+		return isNew;
+	}
+}
+```
+
+For this we use the field `isNew` which needs to get updated to `false` after the entity got saved for the first time.
+For this we need another callback
+
+```
+	@Bean
+	AfterSaveCallback<UuidEntityPresetId> markAsSaved() {
+		return aggregate -> {
+			aggregate.isNew = false;
+			return aggregate;
+		};
+	}
+```
+
+The flag shouldn't get saved to the database which is why it is marked as `@Transient`.
 
 
-== Supported Data Types
+== Domain events
+== Requirements for your entities
 == Custom Conversions
 == Embeddable
 == @Query Annotation
