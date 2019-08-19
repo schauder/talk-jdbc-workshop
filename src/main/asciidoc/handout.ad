@@ -758,13 +758,52 @@ For this we need another callback
 
 The flag shouldn't get saved to the database which is why it is marked as `@Transient`.
 
+For the other variant we first need to introduce custom methods
+
+== Custom Methods
+
+Custom methods are methods in your repository for which you provide the implementation yourself.
+As an example we implement an `insert` method that does a directe insert without checking if the entity is new or not.
+
+First we need an interface to hold the custom methods we want to add.
+
+```
+public interface CustomRepository {
+	void insert(UuidEntityExternalyControlledId entity);
+}
+```
+
+Our repository needs to extend the interface
+
+```
+public interface UuidEntityExternalyControlledIdRepository
+        extends
+        CrudRepository<UuidEntityExternalyControlledId, UUID>,
+        CustomRepository {}
+```
+
+And we need to provide an implementation with the same name as the interface plus an added `Impl`.
+The implementation gets autowired just as a bean so we can inject stuff we need.
+
+In this case we need `JdbcAggregateOperations` which offers an `insert` method which we can use.
+
+```
+public class CustomRepositoryImpl implements CustomRepository {
+
+	@Autowired
+	JdbcAggregateOperations operations;
+
+	public void insert(UuidEntityExternalyControlledId entity){
+		operations.insert(entity);
+	};
+}
+```
 
 == Domain events
 == Requirements for your entities
 == Custom Conversions
 == Embeddable
 == @Query Annotation
-== Custom Methods
 == Integration in Spring Data Rest
 == Q&A
 
