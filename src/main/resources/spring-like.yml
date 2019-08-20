@@ -1,0 +1,120 @@
+highlight_color_green: #007700
+highlight_color_red: #770000
+title_page:
+  align: right
+  logo:
+    top: 10%
+  title:
+    top: 55%
+    font_size: $heading_h1_font_size
+    font_style: bold
+    line_height: 0.9
+  subtitle:
+    font_size: $heading_h3_font_size
+    font_style: bold
+    line_height: 1
+  authors:
+    margin_top: $base_font_size * 1.25
+    font_color: 181818
+  revision:
+    margin_top: $base_font_size * 1.25
+
+toc:
+  indent: 21
+  h2:
+    font_style: bold
+page:
+  layout: portrait
+  margin: [1in, 1in, 1in, 1in]
+  margin_inner: 1.25in
+  margin_outer: 1in
+  size: A4
+base:
+  font_family: SourceSans
+  font_color: #333333
+  line_height_length: 16
+  line_height: $base_line_height_length / $base_font_size
+vertical_spacing: $base_line_height_length
+heading:
+  font_size: 17
+  font_style: bold
+  line_height: 1
+  margin_top: 18
+  h4:
+    margin_bottom: 5
+link:
+  font_color: $highlight_color_green
+outline_list:
+  indent: $base_font_size * 1.5
+running_content:
+  start_at: toc
+header:
+  height: 0.75in
+  line_height: 1.5
+  font_size: 10
+  border_color: #333333
+  padding: [0.5in, 0, 0, 0]
+  recto_content:
+    right: '{document-title} – {document-subtitle}'
+  verso_content:
+    left: '{document-title} – {document-subtitle}'
+footer:
+  height: 0.75in
+  line_height: 1.5
+  border_color: #333333
+  padding: [0, 0, 0.5in, 0]
+  recto_content:
+    right: '{chapter-title} | *{page-number}*'
+  verso_content:
+    left: '*{page-number}* | {chapter-title}'
+image:
+  align: center
+caption:
+  align: center
+  font_size: 10
+font:
+  catalog:
+    FiraCode:
+      normal: FiraCode-Regular.ttf
+      bold: FiraCode-Medium.ttf
+      italic: FiraCode-Regular.ttf
+      bold_italic: FiraCode-Regular.ttf
+    SourceSans:
+      normal: SourceSansPro-Regular.ttf
+      bold: SourceSansPro-Bold.ttf
+      italic: SourceSansPro-It.ttf
+      bold_italic: SourceSansPro-BoldIt.ttf
+    Callouts:
+      normal: mplus1mn-regular-ascii-conums.ttf
+      bold: mplus1mn-regular-ascii-conums.ttf
+      italic: mplus1mn-regular-ascii-conums.ttf
+      bold_italic: mplus1mn-regular-ascii-conums.ttf
+  fallbacks:
+    - Callouts
+code:
+  font_family: FiraCode
+  border_color: #aaaaaa
+literal:
+  font_family: FiraCode
+  font_size: 9
+conum:
+  font_family: Callouts
+ulist:
+  marker:
+    disc:
+      content: "\u2219"
+    circle:
+      content: "\u2219"
+    square:
+      content: "\u2219"
+
+admonition:
+  column:
+    rule_color: #333333
+  icon:
+    tip:
+      name: fa-question-circle
+      stroke_color: $highlight_color_green
+    warning:
+      name: fa-check-circle
+      stroke_color: $highlight_color_green

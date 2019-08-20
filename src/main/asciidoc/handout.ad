@@ -810,4 +810,3 @@ public class CustomRepositoryImpl implements CustomRepository {
 == Integration in Spring Data Rest
 == Q&A
 
-include::self.ad[]
