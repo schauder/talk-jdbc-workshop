@@ -799,11 +799,14 @@ public class CustomRepositoryImpl implements CustomRepository {
 }
 ```
 
+== @Query Annotation
+
+
+
 == Domain events
 == Requirements for your entities
 == Custom Conversions
 == Embeddable
-== @Query Annotation
 == Integration in Spring Data Rest
 == Q&A
 
