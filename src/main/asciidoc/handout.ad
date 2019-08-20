@@ -801,6 +801,32 @@ public class CustomRepositoryImpl implements CustomRepository {
 
 == @Query Annotation
 
+So far we talked almost exclusively about CRUD operations.
+But an important part of working with a relational database is querying.
+
+You can perform arbitrary queries using the `@Query` annotation.
+Let's take a look at a couple example based on talks, speakers and conferences used at the beginning.
+
+You can query for scalar values.
+
+```
+@Query("select count(*) " +
+	"from Conference_Talk ct " +
+	"join Talk t " +
+	"on ct.talk = t.id " +
+	"where :speakerId in (unnest(t.speaker_ids))")
+int countInstancesWith(Long speakerId);
+```
+
+You can query for aggregates.
+
+You can use various wrappers (`List`, `Optional` ...)
+
+You can execute DML statements, e.g. updates.
+
+All statements are executes directly.
+If you don't limit yourself to standard SQL the statements are not portable.
+There are plans to have queries externalized in property files and have separate statements per database but that is not there yet.
 
 
 == Domain events

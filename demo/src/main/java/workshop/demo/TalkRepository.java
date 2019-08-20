@@ -15,6 +15,15 @@
  */
 package workshop.demo;
 
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
-interface TalkRepository extends CrudRepository<Talk, Long> { }
+interface TalkRepository extends CrudRepository<Talk, Long> {
+
+	@Query("select count(*) " +
+			"from Conference_Talk ct " +
+			"join Talk t " +
+			"on ct.talk = t.id " +
+			"where :speakerId in (unnest(t.speaker_ids))")
+	int countInstancesWith(Long speakerId);
+}
