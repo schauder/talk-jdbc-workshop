@@ -15,6 +15,7 @@
  */
 package workshop.demo;
 
+import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
@@ -26,4 +27,10 @@ interface TalkRepository extends CrudRepository<Talk, Long> {
 			"on ct.talk = t.id " +
 			"where :speakerId in (unnest(t.speaker_ids))")
 	int countInstancesWith(Long speakerId);
+
+	@Modifying
+	@Query("update talk t " +
+			"set title = " +
+			"title || ' (with ' || (select s.name from speaker s where s.id = t.speaker_ids[1])  || ')' ")
+	void addSpeakerToTitle();
 }

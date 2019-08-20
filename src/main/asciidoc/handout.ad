@@ -827,17 +827,30 @@ Conference nextConferenceAfter(LocalDate threshold);
 
 You can use various wrappers (`List`, `Optional` ...)
 
-You can execute DML statements, e.g. updates.
+```
+	@Query("Select * from conference where start_date > :threshold order by start_date")
+	List<Conference> conferencesAfter(LocalDate threshold);
+```
 
-All statements are executes directly.
+You can execute DML statements, e.g. updates. They just require an additional `@Modifying`.
+
+```
+@Modifying
+@Query("update talk t " +
+	"set title = " +
+	"title || ' (with ' || (select s.name from speaker s where s.id = t.speaker_ids[1])  || ')' ")
+void addSpeakerToTitle();
+```
+
+All statements are executed directly.
 If you don't limit yourself to standard SQL the statements are not portable.
 There are plans to have queries externalized in property files and have separate statements per database but that is not there yet.
 
-
-== Domain events
-== Requirements for your entities
+== More Mapping Options
+=== Names
+=== Collections
+=== Embeddable
 == Custom Conversions
-== Embeddable
 == Integration in Spring Data Rest
 == Q&A
 

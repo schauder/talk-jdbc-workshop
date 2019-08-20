@@ -69,6 +69,22 @@ public class QueryingTests {
 		assertThat(conferences.nextConferenceAfter(date("2021-01-01"))).isNull();
 	}
 
+	@Test
+	public void queryForWrappedAggregates() {
+
+		assertThat(conferences.conferencesAfter(date("2020-01-01"))).containsExactly(javaLand);
+		assertThat(conferences.conferencesAfter(date("2019-01-01"))).containsExactly(javaForum, javaLand);
+		assertThat(conferences.conferencesAfter(date("2021-01-01"))).isEmpty();
+	}
+
+	@Test
+	public void update() {
+
+		talks.addSpeakerToTitle();
+
+		assertThat(talks.findById(mentoring.id).get().title).endsWith("(with Steven Schwenke)");
+
+	}
 
 	private Talk talk(String title, Speaker... speakers) {
 
