@@ -820,6 +820,11 @@ int countInstancesWith(Long speakerId);
 
 You can query for aggregates.
 
+```
+@Query("Select * from conference where start_date > :threshold order by start_date limit 1 offset 0")
+Conference nextConferenceAfter(LocalDate threshold);
+```
+
 You can use various wrappers (`List`, `Optional` ...)
 
 You can execute DML statements, e.g. updates.

@@ -15,6 +15,13 @@
  */
 package workshop.demo;
 
+import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
-interface ConferenceRepository extends CrudRepository<Conference, Long> { }
+import java.time.LocalDate;
+
+interface ConferenceRepository extends CrudRepository<Conference, Long> {
+
+	@Query("Select * from conference where start_date > :threshold order by start_date limit 1 offset 0")
+	Conference nextConferenceAfter(LocalDate threshold);
+}

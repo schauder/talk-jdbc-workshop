@@ -53,11 +53,20 @@ public class QueryingTests {
 	}
 
 	@Test
-	public void test() {
+	public void queryForScalar() {
 
 		int count = talks.countInstancesWith(tim.id);
 
 		assertThat(count).isEqualTo(3);
+	}
+
+
+	@Test
+	public void queryForAggregate() {
+
+		assertThat(conferences.nextConferenceAfter(date("2020-01-01"))).isEqualTo(javaLand);
+		assertThat(conferences.nextConferenceAfter(date("2019-01-01"))).isEqualTo(javaForum);
+		assertThat(conferences.nextConferenceAfter(date("2021-01-01"))).isNull();
 	}
 
 
@@ -70,9 +79,13 @@ public class QueryingTests {
 
 	private Conference conference(String javaLand, String s, Talk... conferenceTalks) {
 
-		Conference conference = new Conference(javaLand, LocalDate.parse(s, DateTimeFormatter.ISO_DATE));
+		Conference conference = new Conference(javaLand, date(s));
 		conference.addTalks(conferenceTalks);
 		return conference;
+	}
+
+	private LocalDate date(String s) {
+		return LocalDate.parse(s, DateTimeFormatter.ISO_DATE);
 	}
 
 	private Speaker speaker(String name) {
