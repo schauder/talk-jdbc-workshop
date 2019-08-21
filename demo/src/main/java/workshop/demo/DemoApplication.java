@@ -4,10 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.jdbc.repository.QueryMappingConfiguration;
 import org.springframework.data.relational.core.mapping.event.AfterSaveCallback;
 import org.springframework.data.relational.core.mapping.event.BeforeConvertCallback;
-import org.springframework.jdbc.core.RowMapper;
 
 import java.util.UUID;
 

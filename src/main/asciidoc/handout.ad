@@ -898,16 +898,94 @@ public class TalkInfoExtractor implements ResultSetExtractor {
 }
 ```
 
-
 All statements are executed directly.
 If you don't limit yourself to standard SQL the statements are not portable.
 There are plans to have queries externalized in property files and have separate statements per database but that is not there yet.
 
 == More Mapping Options
+
+So far we used almost exclusively the default mapping behaviour of _Spring Data JDBC_ but there are ways to customize the behaviour and also some kinds of mapping that we didn't mention yet.
+
+=== Simple Types
+
+Simple Types are those that can get stored in a single column.
+Examples are
+
+* String
+* primitive types and their boxed siblings
+* BigInteger, BigDecimal
+* Various Date related types
+* Enum
+
 === Names
-=== Collections
+
+The column name for an attribute is the attributes name converted to _snake-case_.
+For example `dateOfBirth` becomes `date_of_birth`
+
+You may customize the column name of an attribute using an `@Column` annotation.
+
+```
+@Column("dob")
+```
+
+=== Collections & Arrays
+
+We mentioned collections in the form of attributes of type `Map` shortly before we dug into aggregates.
+
+You can use the following types of references to other entities
+
+* `Set<ENTITY>`
+* `List<ENTITY>`
+* `Map<SIMPLE, ENTITY>`
+
+Here `ENTITY` is the type of an entity while `SIMPLE` is a simple type.
+
+The table for the referenced type needs an additional column named after the name of the referencing class.
+`List` and `Map` need an additional column to hold the index or key.
+This column again is named after the name of the referencing class with an additional `_KEY` suffix.
+The names of these additional columns may be customized with a `MappedCollection` annotation.
+
+```
+@MappedCollection(idColumn = "redner", keyColumn = "index")
+Map<String, Website> websites = new HashMap<>();
+```
+
+Referenced entities in `List` or `Map` instances don't need an id.
+The combination of back reference and key column form are used as a primary key instead.
+
 === Embeddable
-== Custom Conversions
+
+If reference to an entity is annotated with `@Embedded` the attributes of the referenced type are included in the referencing table.
+The `onEmpty` attribute of the annotation determines how to deal with all `null` values.
+Should it result in a `null` embedded instance or an instance with all attributes set to `null`?
+The `prefix` attribute defines a prefix to be used for the columns of the embedded instance.
+
+For example you might want to add this to the `Speaker` class.
+
+```
+@Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
+ContactInfo contact;
+```
+
+```
+class ContactInfo {
+	String phone;
+	String email;
+}
+```
+
+=== Custom Conversions
+
+
+
+=== Bidirectional Relationships
+
+Bidirectional Relationships aren't directly supported.
+
+For relations between aggregates appropriate query method should be added to the repositories.
+
+Bidirectional relationships inside an aggregate shouldn't be necessary because any access should happen from the aggregate root.
+If it is still wanted it must be established using setters, constructors and event listeners.
+
 == Integration in Spring Data Rest
 == Q&A
-

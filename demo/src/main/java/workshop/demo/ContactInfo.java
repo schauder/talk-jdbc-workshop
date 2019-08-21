@@ -15,23 +15,10 @@
  */
 package workshop.demo;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.relational.core.mapping.Embedded;
-
-import java.util.HashMap;
-import java.util.Map;
-
-@ToString
-@EqualsAndHashCode
-class Speaker {
-	@Id
-	Long id;
-	String name;
-
-	Map<String, Website> websites = new HashMap<>();
-
-	@Embedded(onEmpty = Embedded.OnEmpty.USE_NULL)
-	ContactInfo contact;
+/**
+ * @author Jens Schauder
+ */
+class ContactInfo {
+	String phone;
+	String email;
 }
