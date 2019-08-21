@@ -35,7 +35,7 @@ This only describes the web based variant.
 1. Goto https://start.spring.io
 
 2. Select
-    * latest Milestone version of Spring Boot ({spring.boot.version})
+    * latest Milestone version of Spring Boot ({spring-boot-version})
     * add HyperSQL Database
     * add Lombok
     * add JDBC API
@@ -56,19 +56,19 @@ Open the `pom.xml`.
 Find the following section:
 
 ```
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-jdbc</artifactId>
-		</dependency>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-jdbc</artifactId>
+</dependency>
 ```
 
 And replace it with this one.
 
 ```
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jdbc</artifactId>
-		</dependency>
+<dependency>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-starter-data-jdbc</artifactId>
+</dependency>
 ```
 === Build everything
 
