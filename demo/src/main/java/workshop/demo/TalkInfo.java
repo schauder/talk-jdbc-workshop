@@ -15,8 +15,23 @@
  */
 package workshop.demo;
 
-import org.springframework.data.jdbc.repository.query.Query;
-import org.springframework.data.repository.CrudRepository;
+import java.util.HashSet;
+import java.util.Set;
 
-interface SpeakerRepository extends CrudRepository<Speaker, Long> {
+/**
+ * @author Jens Schauder
+ */
+class TalkInfo {
+
+	private final String title;
+	private final Set<String> conferenceTitles = new HashSet<>();
+
+
+	TalkInfo(String title) {
+		this.title = title;
+	}
+
+	void addConference(String name) {
+		conferenceTitles.add(name);
+	}
 }

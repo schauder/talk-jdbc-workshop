@@ -19,6 +19,8 @@ import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.util.List;
+
 interface TalkRepository extends CrudRepository<Talk, Long> {
 
 	@Query("select count(*) " +
@@ -33,4 +35,13 @@ interface TalkRepository extends CrudRepository<Talk, Long> {
 			"set title = " +
 			"title || ' (with ' || (select s.name from speaker s where s.id = t.speaker_ids[1])  || ')' ")
 	void addSpeakerToTitle();
+
+	@Query(value = "select t.title, c.name " +
+			"from talk t " +
+			"join conference_talk ct on t.id = ct.talk " +
+			"join conference c on c.id = ct.conference " +
+			"order by t.title"
+			, resultSetExtractorClass = TalkInfoExtractor.class
+	)
+	List<TalkInfo> talkInfos();
 }

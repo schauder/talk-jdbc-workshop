@@ -842,6 +842,63 @@ You can execute DML statements, e.g. updates. They just require an additional `@
 void addSpeakerToTitle();
 ```
 
+For even more flexibility you can specify a `ResultSetExtractor` or `RowMapper` to be used.
+These are classes from _Spring JDBC_. Note that there is no _Data_ in _Spring JDBC_.
+The `RowMapper` or `ResultSetExtractor` class get specified in the query annotation as using the `resultExtractorClass` or `rowMapperClass` attributes as in the following example.
+
+```
+	@Query(value = "select t.title, c.name " +
+			"from talk t " +
+			"join conference_talk ct on t.id = ct.talk " +
+			"join conference c on c.id = ct.conference " +
+			"order by t.title"
+			, resultSetExtractorClass = TalkInfoExtractor.class
+	)
+	List<TalkInfo> talkInfos();
+```
+
+The example needs a `TalkInfo` class and the `TalkInfoExtractor` class.
+
+```
+class TalkInfo {
+
+	private final String title;
+	private final Set<String> conferenceTitles = new HashSet<>();
+
+
+	TalkInfo(String title) {
+		this.title = title;
+	}
+
+	void addConference(String name) {
+		conferenceTitles.add(name);
+	}
+}
+```
+
+```
+public class TalkInfoExtractor implements ResultSetExtractor {
+	@Override
+	public Object extractData(ResultSet resultSet) throws SQLException, DataAccessException {
+
+		String currentTalk = "";
+		List<TalkInfo> result = new ArrayList<>();
+
+		while (resultSet.next()) {
+			String talkName = resultSet.getString(1);
+			if (result.isEmpty() || !currentTalk.equals(talkName)) {
+				result.add(new TalkInfo(talkName));
+				currentTalk = talkName;
+			}
+			result.get(result.size()-1).addConference(resultSet.getString(2));
+		}
+
+		return result;
+	}
+}
+```
+
+
 All statements are executed directly.
 If you don't limit yourself to standard SQL the statements are not portable.
 There are plans to have queries externalized in property files and have separate statements per database but that is not there yet.

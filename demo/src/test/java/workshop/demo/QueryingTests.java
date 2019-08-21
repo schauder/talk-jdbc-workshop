@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static java.util.Arrays.*;
 import static org.assertj.core.api.Assertions.*;
@@ -83,7 +84,13 @@ public class QueryingTests {
 		talks.addSpeakerToTitle();
 
 		assertThat(talks.findById(mentoring.id).get().title).endsWith("(with Steven Schwenke)");
+	}
 
+	@Test
+	public void customExtraction() {
+
+		List<TalkInfo> talkInfos = talks.talkInfos();
+		assertThat(talkInfos).hasSize(3);
 	}
 
 	private Talk talk(String title, Speaker... speakers) {
