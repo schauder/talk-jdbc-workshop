@@ -15,10 +15,13 @@
  */
 package workshop.demo;
 
+import lombok.Value;
+
 /**
  * @author Jens Schauder
  */
-class ContactInfo {
-	String phone;
-	Email email;
+@Value
+class Email {
+	String localPart;
+	String domain;
 }

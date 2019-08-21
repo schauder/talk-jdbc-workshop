@@ -902,9 +902,26 @@ All statements are executed directly.
 If you don't limit yourself to standard SQL the statements are not portable.
 There are plans to have queries externalized in property files and have separate statements per database but that is not there yet.
 
-== More Mapping Options
+== More Mapping
 
 So far we used almost exclusively the default mapping behaviour of _Spring Data JDBC_ but there are ways to customize the behaviour and also some kinds of mapping that we didn't mention yet.
+
+=== General class requirements
+
+Spring Data JDBC can use a default constructor for instantiating entities.
+It also accepts constructors which take some or all of the attributes as arguments.
+In this case the names of the constructor parameters must match the names of the attributes.
+If there is more than one constructor one needs to be marked as the one to use with `@PersistenceConstructor`.
+
+Attributes that didn't get set by the constructor get set by
+* setter
+* "wither"
+* or direct field access
+
+A "wither" is a setter for an immutable object. It uses the prefix `with` instead of `set` and since the attribute value can not be changed it instead returns a new instance with the attribute set to the argument value.
+
+"Wither" can be easily produced by Lombok or written by hand.
+Kotlin data objects work as well.
 
 === Simple Types
 
@@ -926,6 +943,22 @@ You may customize the column name of an attribute using an `@Column` annotation.
 
 ```
 @Column("dob")
+```
+
+=== NamingStrategy
+
+If you want to change how columns and tables are named in general you can register your own `NamingStrategy`
+
+```
+@Bean
+NamingStrategy namingStrategy() {
+	return new NamingStrategy(){
+		@Override
+		public String getTableName(Class<?> type) {
+			return "T_" + NamingStrategy.super.getTableName(type);
+		}
+	};
+}
 ```
 
 === Collections & Arrays
@@ -953,6 +986,8 @@ Map<String, Website> websites = new HashMap<>();
 Referenced entities in `List` or `Map` instances don't need an id.
 The combination of back reference and key column form are used as a primary key instead.
 
+A list or array of a simple type will get stored as an `ARRAY` if the database supports it.
+
 === Embeddable
 
 If reference to an entity is annotated with `@Embedded` the attributes of the referenced type are included in the referencing table.
@@ -976,7 +1011,89 @@ class ContactInfo {
 
 === Custom Conversions
 
+You can register custom conversions if you want to control how values get written to the database or read from it.
+As an example we introduce a custom `Email` class.
 
+```
+@Value
+class Email {
+	String localPart;
+	String domain;
+}
+```
+
+We need to create two converters in order to write and read it to and from the database.
+
+```
+@WritingConverter
+enum EmailToStringConverter implements Converter<Email, String> {
+
+	INSTANCE;
+
+	@Override
+	public String convert(Email source) {
+		if (source == null) {
+			return null;
+		}
+
+		{
+			return source.getLocalPart() + "@" + source.getDomain();
+		}
+	}
+}
+```
+
+```
+@ReadingConverter
+enum StringToEmailConverter implements Converter<String, Email> {
+
+	INSTANCE;
+
+	@Override
+	public Email convert(String source) {
+		if (source == null) {
+			return null;
+		}
+
+		String[] split = source.split("@");
+
+		if (split.length != 2) {
+			throw new IllegalArgumentException("Can't parse %s into a Email. Expecting exactly one @");
+		}
+
+		return new Email(split[0], split[1]);
+	}
+}
+```
+
+And we need to register these converters as `JdbcCustomConversions`.
+For this we let our configuration extend `AbstractJdbcConfiguration` and overwrite the `jdbcCuostomConversions()` bean method.
+
+```
+
+@SpringBootApplication
+public class DemoApplication extends AbstractJdbcConfiguration {
+
+    // .. other code that we might have here so far
+
+	@Bean
+	@Override
+	public JdbcCustomConversions jdbcCustomConversions() {
+		return new JdbcCustomConversions(asList(EmailToStringConverter.INSTANCE, StringToEmailConverter.INSTANCE));
+	}
+
+}
+
+```
+
+Now we can replace the email `String` in `ContactInfo` with a proper class
+
+```
+class ContactInfo {
+	String phone;
+	Email email;
+}
+```
 
 === Bidirectional Relationships
 
@@ -987,5 +1104,3 @@ For relations between aggregates appropriate query method should be added to the
 Bidirectional relationships inside an aggregate shouldn't be necessary because any access should happen from the aggregate root.
 If it is still wanted it must be established using setters, constructors and event listeners.
 
-== Integration in Spring Data Rest
-== Q&A
