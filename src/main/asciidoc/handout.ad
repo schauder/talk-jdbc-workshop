@@ -38,20 +38,21 @@ This only describes the web based variant.
 1. Goto https://start.spring.io
 
 2. Select
-    * latest Milestone version of Spring Boot ({spring-boot-version})
-    * add HyperSQL Database
-    * add Lombok
-    * add JDBC API
-    * generate the project
-    * unpack
-    * open in the IDE
+* latest Milestone version of Spring Boot ({spring-boot-version})
+* add HyperSQL Database
+* add Lombok
+* add JDBC API
+* generate the project
+* unpack
+* open in the IDE
 
 Some Notes on the dependencies:
 
 **Lombok** isn't really needed but it makes the code nice and concise.
 If you don't like Lombok you can create constructors, `equals` and `hashcode` implementations with your IDE just as well.
 
-**JDBC API** is actually not what we need. But it's close and we'll change it in a moment.
+**JDBC API** is actually not what we need.
+But it's close and we'll change it in a moment.
 
 === Add Spring Data JDBC
 
@@ -75,6 +76,7 @@ And replace it with this one.
 	<artifactId>spring-boot-starter-data-jdbc</artifactId>
 </dependency>
 ----
+
 === Build everything
 
 From the commandline run
@@ -159,6 +161,7 @@ If you execute the changed application you'll get an exception like the followin
 ```
 user lacks privilege or object not found: SPEAKER in statement [INSERT INTO speaker (name) VALUES (?)]
 ```
+
 This is because we didn't create any tables yet!
 
 Add the following `schema.sql` to the `source/main/resources` folder to fix this.
@@ -237,7 +240,8 @@ In order to use Spring Data JDBC in a Spring Boot application you need to do the
 
 == Spring Data JDBC vs Spring Data JPA
 
-Why are there two Spring Data modules for the same underlying technology: Relational databases?
+Why are there two Spring Data modules for the same underlying technology:
+Relational databases?
 
 JPA is pretty much the default technology when accessing RDBMSes on the JVM.
 This does not mean it is without problems.
@@ -260,7 +264,7 @@ For example you can't easily load the current state of an object from the databa
 * Finally JPA maintains a relationship between domain objects and the persistence context.
 This is to enable dirty checking.
 Again, often this is very useful.
-But  it also can get very confusing when you actually don't want to persist changes to an entity.
+But it also can get very confusing when you actually don't want to persist changes to an entity.
 Or if you want to copy an entity.
 
 This makes JPA hard to understand and hard to use correctly.
@@ -270,7 +274,8 @@ We achieve that by not doing many things.
 
 1. No Lazy Loading.
 2. No write behind cache.
-3. No cache at all. Of course you are free to add a cache on top of it.
+3. No cache at all.
+Of course you are free to add a cache on top of it.
 4. No proxies.
 
 Spring Data will save you data when you call `save` and only return once it is inserted or updated in the database.
@@ -312,7 +317,7 @@ assertThat(loaded.get())
 		.isNotSameAs(reloaded.get());
 ----
 
-While this  makes things simpler it brings some extra challenges.
+While this makes things simpler it brings some extra challenges.
 We'll see those later and how to tackle them.
 
 == Storing Relationships
@@ -386,7 +391,7 @@ Do you have questions?
 
 == Aggregates in DDD and M:x Relationships Spring Data JDBC
 
-In the last example you could observe that deleting a `Speaker` deleted  all the `Website` instances.
+In the last example you could observe that deleting a `Speaker` deleted all the `Website` instances.
 Currently even an update does that.
 In the update case there are improvements planned so that only those actually removed from a collection get deleted.
 But those that get removed from the collection still will get deleted and so are those referenced by a `Speaker` that gets deleted.
@@ -408,13 +413,13 @@ Let's hear Martin Fowler.
 
 > A DDD aggregate is a cluster of domain objects that can be treated as a single unit.
  [...]
- Aggregates are the basic element of transfer of data storage - you request to load or save whole aggregates.
+Aggregates are the basic element of transfer of data storage - you request to load or save whole aggregates.
 
 Closely related to aggregates is the "aggregate root"
 
 > An aggregate will have one of its component objects be the aggregate root.
-  Any references from outside the aggregate should only go to the aggregate root.
-  The root can thus ensure the integrity of the aggregate as a whole.
+Any references from outside the aggregate should only go to the aggregate root.
+The root can thus ensure the integrity of the aggregate as a whole.
 
 Spring Data JDBC saves, loads and deletes aggregates.
 This fits the approach of deleting everything.
@@ -428,7 +433,9 @@ So lets ask David Masters
 
 > It makes life much easier if you just keep a reference of the aggregate’s ID rather than the actual aggregate itself.
 
-Or Vaughn Vernon _Domain-Driven Design Distilled (Kindle Locations 1087-1088). Pearson Education. Kindle Edition._
+Or Vaughn Vernon _Domain-Driven Design Distilled (Kindle Locations 1087-1088).
+Pearson Education.
+Kindle Edition._
 
 > Reference other Aggregates by identity only.
 
@@ -648,8 +655,8 @@ And this has all kinds of positiv effects.
 * The persistence question may now be answered for every aggregate separately.
 Since you are loading it from an repository anyway you might as well store it in a different database.
 * You might rethink foreign keys between aggregates.
-    ** Using deferred constraints may help with integration tests, because you no longer need to create all referenced entities.
-    ** Dropping foreign keys completely between aggregates is a sensible way to eventual consistency.
+** Using deferred constraints may help with integration tests, because you no longer need to create all referenced entities.
+** Dropping foreign keys completely between aggregates is a sensible way to eventual consistency.
 * Eventually the boundaries between aggregates might turn into boundaries between microservices.
 
 === Congratulations
@@ -682,7 +689,6 @@ class UuidEntity {
 	String name;
 }
 ----
-
 
 [source,sql]
 ----
@@ -724,7 +730,7 @@ BeforeConvertCallback<UuidEntity> uuidGenerator() {
 ----
 
 This is what is happening under the hood:
-Spring Data notices that the id is `null` and therefore determines that it is  a new entity.
+Spring Data notices that the id is `null` and therefore determines that it is a new entity.
 The callback then sets the id and Spring Data continues to convert it and to store it with the generated id in the database.
 
 This makes it obvious why we need a different strategy for the case where the id is set a priori.
@@ -868,7 +874,8 @@ You can use various wrappers (`List`, `Optional` ...)
 List<Conference> conferencesAfter(LocalDate threshold);
 ----
 
-You can execute DML statements, e.g. updates. They just require an additional `@Modifying`.
+You can execute DML statements, e.g. updates.
+They just require an additional `@Modifying`.
 
 [source,java]
 ----
@@ -880,7 +887,8 @@ void addSpeakerToTitle();
 ----
 
 For even more flexibility you can specify a `ResultSetExtractor` or `RowMapper` to be used.
-These are classes from _Spring JDBC_. Note that there is no _Data_ in _Spring JDBC_.
+These are classes from _Spring JDBC_.
+Note that there is no _Data_ in _Spring JDBC_.
 The `RowMapper` or `ResultSetExtractor` class get specified in the query annotation as using the `resultExtractorClass` or `rowMapperClass` attributes as in the following example.
 
 [source,java]
@@ -958,7 +966,8 @@ Attributes that didn't get set by the constructor get set by
 * "wither"
 * or direct field access
 
-A "wither" is a setter for an immutable object. It uses the prefix `with` instead of `set` and since the attribute value can not be changed it instead returns a new instance with the attribute set to the argument value.
+A "wither" is a setter for an immutable object.
+It uses the prefix `with` instead of `set` and since the attribute value can not be changed it instead returns a new instance with the attribute set to the argument value.
 
 "Wither" can be easily produced by Lombok or written by hand.
 Kotlin data objects work as well.
